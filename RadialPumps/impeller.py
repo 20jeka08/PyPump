@@ -294,7 +294,7 @@ class PyPumpRadialImpeller():
 
 if __name__=='__main__':
     # Example of the impeller pump calculation
-    Pump = PyPumpRadialImpeller(120, 5000/3600, 1000, 1, 997)
+    Pump = PyPumpRadialImpeller(53, 5/3600, 2985, 1, 997)
     psi = Pump.psi(ft=1.00)
     D2 = Pump.D2(psi)
     b2 = Pump.b2(D2)
@@ -316,7 +316,7 @@ if __name__=='__main__':
     pumpHead = Pump.pumpHead(c2m=c2m, u2=u2, e2=e1, D2=D2, Z=6, hydraulicEff=HydrEff, Beta2=20.53)
     impellerHead = Pump.impellerHead(c2m=c2m, u2=u2, e2=e1, D2=D2, Z=6, hydraulicEff=HydrEff, Beta2=20.53)
     print (HydrEff)
-    print (pumpHead)
-    print (impellerHead)
-    print (u2)
+    print (D2)
+    print (b2)
+    print (shaftD)
     print (c2u)
