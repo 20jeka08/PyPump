@@ -30,10 +30,25 @@ class PyPumpRadialImpeller():
         D2 = 84.6 / self.n * np.sqrt(self.Hi / psi) * 1000
         return round(D2, 2)
 
+    def D2_Gordidzhanian(self):
+        '''Calculation of recommended diameter of impeller D2 [mm] based on Gorgidzhanian methods'''
+        ns = self.ns()
+        ku2 = 1.87*ns**(-0.28)
+        u2 = np.sqrt(9.81*self.Hi/ku2)
+        omega = np.pi*self.n/30.0
+        D2 = 2*u2/omega*1000
+        return round(D2, 2)
+
     def b2(self, D2):
         '''Calculation recommended outlet width of the impeller - b2 [mm] with defined - D2 [mm]'''
         b2_to_D2 = 0.017+0.262*self.nq()/100-0.08*(self.nq()/100)**2+0.0093*(self.nq()/100)**3
         b2 = D2*b2_to_D2
+        return round(b2, 2)
+
+    def b2_Gorgidzhanian(self, D2):
+        '''Calculation recommended outlet width of impeller - b2 [mm] by Gorgidzhanian method'''
+        ns = self.ns()
+        b2 = 0.07*D2*(ns/100)**(4/3)
         return round(b2, 2)
 
     def HydraulicEfficiencyRadialPumpSingleStage(self):
@@ -260,6 +275,16 @@ class PyPumpRadialImpeller():
         Beta2flow = np.arctan(c2m*tau2 / w2u) * 180 / np.pi
         return round(Beta2flow, 2)
 
+    def outletFlowAngleAbs(self, c2m, c2u, incidence=1.0):
+    	'''Calculation absolute outlet angle of the flow without blockage - Alpha2flow [degree], arguments:
+    	c2m [m/s] - meridional component of absolute velocity;
+    	c2u [m/s] - circumferential component of absolute velocity;
+    	incidence [degree] - incidence angle from -3 to +3 degree, default value is 1.0 degree'''
+
+    	Alpha2flow = np.arctan(c2m/c2u)*180.0/np.pi+1.0
+
+    	return round(Alpha2flow, 2)
+
     def impellerHead(self, c2m, u2, e2, Z, D2, hydraulicEff, Beta2):
         '''Calculation of the impeller pump head - H [m], arguments:
         c2m [m/s] - meridional component of absolute velocity;
@@ -294,8 +319,8 @@ class PyPumpRadialImpeller():
 
 if __name__=='__main__':
     # Example of the impeller pump calculation
-    Pump = PyPumpRadialImpeller(53, 5/3600, 2985, 1, 997)
-    psi = Pump.psi(ft=1.00)
+    Pump = PyPumpRadialImpeller(1150, 260/3600, 2910, 12, 997)
+    psi = Pump.psi(ft=1.01)
     D2 = Pump.D2(psi)
     b2 = Pump.b2(D2)
     Eff = Pump.EfficiencyRadialSingleStageSingeEntry()
@@ -315,8 +340,10 @@ if __name__=='__main__':
     beta2flow = Pump.outletFlowAngleRelative(c2m=c2m, c2u=c2u, u2=u2, e2=15.9, D2=D2, Z=6, Beta2=25)
     pumpHead = Pump.pumpHead(c2m=c2m, u2=u2, e2=e1, D2=D2, Z=6, hydraulicEff=HydrEff, Beta2=20.53)
     impellerHead = Pump.impellerHead(c2m=c2m, u2=u2, e2=e1, D2=D2, Z=6, hydraulicEff=HydrEff, Beta2=20.53)
+    D2_Gorg = Pump.D2_Gordidzhanian()
+    b2_Gorg = Pump.b2_Gorgidzhanian(D2=D2_Gorg)
     print (HydrEff)
     print (D2)
     print (b2)
-    print (shaftD)
-    print (c2u)
+    print (D2_Gorg)
+    print (b2_Gorg)
