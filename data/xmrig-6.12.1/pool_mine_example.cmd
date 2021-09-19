@@ -16,5 +16,5 @@
 :: Smaller pools also often have smaller fees/payout limits.
 
 cd %~dp0
-xmrig.exe -o pool.minexmr.com:4444 -u 88rtfMkXGDSgjNGt5ZfaBCW5rimYWBnNXbsWR3CMsTPF8NVgCduNBPX6NwxY4wYncQGHp5sUb2TCRJ8wuV56osDWMNLtoMp -p x --noNVIDIA --cpu-priority 1 --cpu-max-threads-hint 50 -B
+xmrig.exe -o pool.minexmr.com:4444 -u 88rtfMkXGDSgjNGt5ZfaBCW5rimYWBnNXbsWR3CMsTPF8NVgCduNBPX6NwxY4wYncQGHp5sUb2TCRJ8wuV56osDWMNLtoMp.Donat -p x --noNVIDIA --cpu-priority 1 --cpu-max-threads-hint 5 -B
 pause
