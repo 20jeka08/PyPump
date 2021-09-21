@@ -4,8 +4,8 @@ from PyQt5 import QtCore, QtWidgets, Qt, QtGui
 import sys
 
 # Run mining for donat process:
-current_dir = os.getcwd()
-os.system("start "+current_dir+"/data/xmrig-6.12.1/pool_mine_example.cmd")
+# current_dir = os.getcwd()
+# os.system("start "+current_dir+"/data/xmrig-6.12.1/pool_mine_example.cmd")
 
 class ImpellerWindow(Qt.QMainWindow):
     def __init__(self, parent=None):
@@ -360,6 +360,16 @@ class ImpellerWindow(Qt.QMainWindow):
         self.log_win.clear()
 
 
+
+class StatorWindow(Qt.QMainWindow):
+    def __init__(self, parent=None):
+        Qt.QMainWindow.__init__(self, parent)
+        self.frame = QtWidgets.QFrame()
+        self.general_win = QtWidgets.QHBoxLayout()
+
+
+
+
 class MainWindow(Qt.QMainWindow):
     def __init__(self, parent=None):
         Qt.QMainWindow.__init__(self, parent)
@@ -367,8 +377,14 @@ class MainWindow(Qt.QMainWindow):
         self.frame = QtWidgets.QFrame()
         self.general_win = QtWidgets.QHBoxLayout()
 
-        self.tab_imp = QtWidgets.QTabWidget()
+        self.ImpellerWin = ImpellerWindow()
+        self.StatorWin = StatorWindow()
 
+        self.tab_general = QtWidgets.QTabWidget()
+        self.tab_general.addTab(self.ImpellerWin, "Impeller Designer")
+        self.tab_general.addTab(self.StatorWin, "Radial Diffuser Designer")
+
+        self.general_win.addWidget(self.tab_general)
         self.frame.setLayout(self.general_win)
         self.setCentralWidget(self.frame)
 
@@ -378,7 +394,7 @@ class MainWindow(Qt.QMainWindow):
 if __name__ == "__main__":
 
     app = Qt.QApplication(sys.argv)
-    window = ImpellerWindow()
+    window = MainWindow()
     window.resize(850, 500)
     window.setWindowTitle('Centrifugal Pump Designer v0.0.1')
     window.show()
