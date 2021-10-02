@@ -21,7 +21,6 @@ class PyPumpRadialStatorVanes(PyPumpRadialImpeller):
     def D3_D2(self):
         '''Recomended value of D3 to D2 ratio by Gulich'''
         nq = self.nq()
-        print(nq)
         if self.Hi < 100:
             D3toD2 = 1.015
         else:

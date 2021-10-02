@@ -122,7 +122,7 @@ class ImpellerWindow(Qt.QMainWindow):
         self.button_calc = QtWidgets.QPushButton('Calculate Dimensions')
         self.button_calc.setStyleSheet(self.but_color)
         self.button_calc.clicked.connect(self.calc_imp_dim)
-        self.v2.addWidget(self.button_calc)
+        # self.v2.addWidget(self.button_calc)
 
         self.h1 = QtWidgets.QHBoxLayout()
         self.h1.setAlignment(Qt.Qt.AlignRight)
@@ -330,8 +330,6 @@ class ImpellerWindow(Qt.QMainWindow):
         self.log_win.append('P [W]: '+str(round(P, 2)))
         self.log_win.append('Eff'+' [%]: '+str(round(Eff, 2)))
 
-
-
         return 0
 
     def calc_ft(self):
@@ -362,11 +360,98 @@ class ImpellerWindow(Qt.QMainWindow):
 
 
 class StatorWindow(Qt.QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, Q=100, ro=997, H=1150, i=10, n=2910):
         Qt.QMainWindow.__init__(self, parent)
+
+        # buttons colors
+        self.but_color = "background-color: lightblue"
+
+        self.Q = str(Q)
+        self.ro = str(ro)
+        self.H = str(H)
+        self.i = str(i)
+        self.n = str(n)
+
         self.frame = QtWidgets.QFrame()
         self.general_win = QtWidgets.QHBoxLayout()
 
+        self.v1 = QtWidgets.QVBoxLayout()
+        self.v2 = QtWidgets.QVBoxLayout()
+        self.v2.setAlignment(Qt.Qt.AlignTop)
+        self.v3 = QtWidgets.QVBoxLayout()
+
+
+        self.general_win.addLayout(self.v1, 60)
+        self.general_win.addLayout(self.v2, 20)
+        self.general_win.addLayout(self.v3, 20)
+
+        self.label_st = QtWidgets.QLabel()
+        self.pixmap_st = QtGui.QPixmap("./data/st_vanes.jpg")
+        self.label_st.setPixmap(self.pixmap_st)
+        self.v1.addWidget(self.label_st)
+
+        self.label_v1_2 = QtWidgets.QLabel('Report of Calculations:')
+        self.v1.addWidget(self.label_v1_2)
+
+        self.log_win = QtWidgets.QTextEdit()
+        self.v1.addWidget(self.log_win)
+
+        ## PUMP MAIN DIMENSIONS CALCULATION:
+        ##### Initial Parameters:
+
+        H = self.H
+        Q = self.Q
+        n = self.n
+        i = self.i
+        ro = self.ro
+
+        self.label_input = QtWidgets.QLabel('Input Pump Parameters:')
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+        self.label_input.setFont(myFont)
+        self.v2.addWidget(self.label_input)
+
+        self.label_Q = QtWidgets.QLabel('Volume Flow Rate, Q [m<sup>3</sup>/h]:')
+        self.v2.addWidget(self.label_Q)
+        self.line_Q = QtWidgets.QLabel(Q)
+        self.v2.addWidget(self.line_Q)
+
+        self.label_H = QtWidgets.QLabel('Head of Pump, H [meters]:')
+        self.v2.addWidget(self.label_H)
+        self.line_H = QtWidgets.QLabel(H)
+        self.v2.addWidget(self.line_H)
+
+        self.label_n = QtWidgets.QLabel('Rotation Speed, n [rpm]:')
+        self.v2.addWidget(self.label_n)
+        self.line_n = QtWidgets.QLabel(n)
+        self.v2.addWidget(self.line_n)
+
+        self.label_i = QtWidgets.QLabel('Number of Stages, i [-]:')
+        self.v2.addWidget(self.label_i)
+        self.line_i = QtWidgets.QLabel(i)
+        self.v2.addWidget(self.line_i)
+
+        self.label_b3b2 = QtWidgets.QLabel('Width Ratio, b<sub>3</sub>/b<sub>2</sub> [-]:')
+        self.v2.addWidget(self.label_b3b2)
+        self.slider_b3b2 = QtWidgets.QSlider(Qt.Qt.Horizontal)
+        self.slider_b3b2.setMinimum(100)
+        self.slider_b3b2.setMaximum(115)
+        self.slider_b3b2.setValue(105)
+        self.v2.addWidget(self.slider_b3b2)
+        #self.slider_b3b2.valueChanged.connect(self.calc_ft)
+
+
+
+        self.frame.setLayout(self.general_win)
+        self.setCentralWidget(self.frame)
+
+
+
+    def calc_st_dim(self):
+        self.line_Q.setText(str(self.Q))
+        self.line_H.setText(str(self.H))
+        self.line_n.setText(str(self.n))
+        self.line_i.setText(str(self.i))
 
 
 
@@ -374,8 +459,11 @@ class MainWindow(Qt.QMainWindow):
     def __init__(self, parent=None):
         Qt.QMainWindow.__init__(self, parent)
 
+        # buttons colors
+        self.but_color = "background-color: lightblue"
+
         self.frame = QtWidgets.QFrame()
-        self.general_win = QtWidgets.QHBoxLayout()
+        self.general_win = QtWidgets.QVBoxLayout()
 
         self.ImpellerWin = ImpellerWindow()
         self.StatorWin = StatorWindow()
@@ -384,9 +472,31 @@ class MainWindow(Qt.QMainWindow):
         self.tab_general.addTab(self.ImpellerWin, "Impeller Designer")
         self.tab_general.addTab(self.StatorWin, "Radial Diffuser Designer")
 
+        self.button_win = QtWidgets.QVBoxLayout()
+        self.but_calc = QtWidgets.QPushButton('Calculate Dimensions')
+        self.button_win.addWidget(self.but_calc)
+
+        self.but_calc.setStyleSheet(self.but_color)
+        self.but_calc.setFixedSize(150, 30)
+        self.but_calc.clicked.connect(self.calc_func)
+
         self.general_win.addWidget(self.tab_general)
+        self.general_win.addLayout(self.button_win)
         self.frame.setLayout(self.general_win)
         self.setCentralWidget(self.frame)
+
+    def calc_func(self):
+        self.ImpellerWin.calc_imp_dim()
+        cur_Q = self.ImpellerWin.line_Q.text()
+        cur_H = self.ImpellerWin.line_H.text()
+        cur_n = self.ImpellerWin.line_n.text()
+        cur_i = self.ImpellerWin.line_i.text()
+
+        self.StatorWin.Q = cur_Q
+        self.StatorWin.H = cur_H
+        self.StatorWin.n = cur_n
+        self.StatorWin.i = cur_i
+        self.StatorWin.calc_st_dim()
 
 
 
