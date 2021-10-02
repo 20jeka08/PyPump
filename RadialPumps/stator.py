@@ -1,5 +1,5 @@
 import numpy as np
-from impeller import PyPumpRadialImpeller
+from RadialPumps.impeller import PyPumpRadialImpeller
 
 class PyPumpRadialStatorVanes(PyPumpRadialImpeller):
     def __init__(self, H, Q, n, i, ro):
@@ -88,6 +88,7 @@ class PyPumpRadialStatorVanes(PyPumpRadialImpeller):
         R1_L = -0.537*priority+0.695
         delta_alpha = 16.5*np.sqrt(R1_L)
         alpha4 = alpha3 + delta_alpha
+
         return alpha4
 
     def c6m(self, c1m):
@@ -143,7 +144,7 @@ if __name__ == '__main__':
     c3u = stator.c3u(D2=D2, D3=D3, c2u=c2u)
     print(c2u)
     print(c3u)
-    alpha3 = stator.alpha3(c3m=c3m, c3u=c3u, incidence=1.0)
+    alpha3 = stator.alpha3(c3m=c3m, c3u=c3u, incidence=0.0)
     print(alpha3)
     alpha4 = stator.alpha4(alpha3=alpha3, D4toD2=D4toD2)
     print(alpha4)

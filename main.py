@@ -1,4 +1,5 @@
 import RadialPumps.impeller as pump
+import RadialPumps.stator as stator
 import os
 from PyQt5 import QtCore, QtWidgets, Qt, QtGui
 import sys
@@ -372,6 +373,8 @@ class StatorWindow(Qt.QMainWindow):
         self.i = str(i)
         self.n = str(n)
 
+        self.stator = stator.PyPumpRadialStatorVanes(H, Q/3600, n, i, ro)
+
         self.frame = QtWidgets.QFrame()
         self.general_win = QtWidgets.QHBoxLayout()
 
@@ -434,17 +437,38 @@ class StatorWindow(Qt.QMainWindow):
         self.label_b3b2 = QtWidgets.QLabel('Width Ratio, b<sub>3</sub>/b<sub>2</sub> [-]:')
         self.v2.addWidget(self.label_b3b2)
         self.slider_b3b2 = QtWidgets.QSlider(Qt.Qt.Horizontal)
-        self.slider_b3b2.setMinimum(100)
-        self.slider_b3b2.setMaximum(115)
-        self.slider_b3b2.setValue(105)
+        self.slider_b3b2.setMinimum(int(self.stator.b3_b2()[0]*100))
+        self.slider_b3b2.setMaximum(int(self.stator.b3_b2()[1]*100))
+        self.slider_b3b2.setValue(117)
+        self.slider_b3b2.valueChanged.connect(self.calc_b3b2)
+        self.label_b3b2_res = QtWidgets.QLabel('b<sub>3</sub>/b<sub>2</sub> value: 1.17')
         self.v2.addWidget(self.slider_b3b2)
-        #self.slider_b3b2.valueChanged.connect(self.calc_ft)
+        self.v2.addWidget(self.label_b3b2_res)
+
+        self.label_D4D2 = QtWidgets.QLabel('Radial Dimension Ratio Priority, p [-]:')
+        self.v2.addWidget(self.label_D4D2)
+        self.slider_D4D2 = QtWidgets.QSlider(Qt.Qt.Horizontal)
+        self.slider_D4D2.setMinimum(105)
+        self.slider_D4D2.setMaximum(115)
+        self.slider_D4D2.setValue(110)
+        self.slider_D4D2.valueChanged.connect(self.calc_priority)
+        self.v2.addWidget(self.slider_D4D2)
+        self.label_D4D2_res = QtWidgets.QLabel('p value: 1.1')
+        self.v2.addWidget(self.label_D4D2_res)
+
 
 
 
         self.frame.setLayout(self.general_win)
         self.setCentralWidget(self.frame)
 
+    def calc_b3b2(self):
+        res = self.slider_b3b2.value() / 100.0
+        self.label_b3b2_res.setText('b<sub>3</sub>/b<sub>2</sub> value: ' + str(res))
+
+    def calc_priority(self):
+        res = self.slider_D4D2.value() / 100.0
+        self.label_D4D2_res.setText('p value: '+str(res))
 
 
     def calc_st_dim(self):
@@ -506,6 +530,6 @@ if __name__ == "__main__":
     app = Qt.QApplication(sys.argv)
     window = MainWindow()
     window.resize(850, 500)
-    window.setWindowTitle('Centrifugal Pump Designer v0.0.1')
+    window.setWindowTitle('Centrifugal Pump Designer v0.0.2')
     window.show()
     sys.exit(app.exec_())
