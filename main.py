@@ -373,7 +373,17 @@ class StatorWindow(Qt.QMainWindow):
         self.i = str(i)
         self.n = str(n)
 
-        self.stator = stator.PyPumpRadialStatorVanes(H, Q/3600, n, i, ro)
+        self.D2 = None
+        self.b2 = None
+        self.d0 = None
+        self.D0 = None
+        self.choose_type = None
+        self.Z2 = None
+
+        self.H_imp = None
+        self.H = None
+        self.P = None
+        self.Eff = None
 
         self.frame = QtWidgets.QFrame()
         self.general_win = QtWidgets.QHBoxLayout()
@@ -382,6 +392,7 @@ class StatorWindow(Qt.QMainWindow):
         self.v2 = QtWidgets.QVBoxLayout()
         self.v2.setAlignment(Qt.Qt.AlignTop)
         self.v3 = QtWidgets.QVBoxLayout()
+        self.v3.setAlignment(Qt.Qt.AlignTop)
 
 
         self.general_win.addLayout(self.v1, 60)
@@ -398,6 +409,23 @@ class StatorWindow(Qt.QMainWindow):
 
         self.log_win = QtWidgets.QTextEdit()
         self.v1.addWidget(self.log_win)
+
+        self.h1 = QtWidgets.QHBoxLayout()
+        self.h1.setAlignment(Qt.Qt.AlignRight)
+
+        self.button_save_log1 = QtWidgets.QPushButton('Save Report File')
+        self.button_save_log1.setStyleSheet(self.but_color)
+        self.button_save_log1.setFixedSize(100, 30)
+        self.button_save_log1.clicked.connect(self.save_log1)
+        self.h1.addWidget(self.button_save_log1)
+
+        self.button_clear_log1 = QtWidgets.QPushButton('Clean')
+        self.button_clear_log1.setStyleSheet(self.but_color)
+        self.button_clear_log1.setFixedSize(100, 30)
+        self.button_clear_log1.clicked.connect(self.clean_log1)
+        self.h1.addWidget(self.button_clear_log1)
+
+        self.v1.addLayout(self.h1)
 
         ## PUMP MAIN DIMENSIONS CALCULATION:
         ##### Initial Parameters:
@@ -437,8 +465,8 @@ class StatorWindow(Qt.QMainWindow):
         self.label_b3b2 = QtWidgets.QLabel('Width Ratio, b<sub>3</sub>/b<sub>2</sub> [-]:')
         self.v2.addWidget(self.label_b3b2)
         self.slider_b3b2 = QtWidgets.QSlider(Qt.Qt.Horizontal)
-        self.slider_b3b2.setMinimum(int(self.stator.b3_b2()[0]*100))
-        self.slider_b3b2.setMaximum(int(self.stator.b3_b2()[1]*100))
+        self.slider_b3b2.setMinimum(int(1.05*100))
+        self.slider_b3b2.setMaximum(int(1.30*100))
         self.slider_b3b2.setValue(117)
         self.slider_b3b2.valueChanged.connect(self.calc_b3b2)
         self.label_b3b2_res = QtWidgets.QLabel('b<sub>3</sub>/b<sub>2</sub> value: 1.17')
@@ -456,8 +484,72 @@ class StatorWindow(Qt.QMainWindow):
         self.label_D4D2_res = QtWidgets.QLabel('p value: 1.1')
         self.v2.addWidget(self.label_D4D2_res)
 
+        ## RESULTS OF CALCULATION:
+        self.label_nsnq = QtWidgets.QLabel("Specific Speeds:")
+        self.label_nsnq.setFont(myFont)
+        self.v3.addWidget(self.label_nsnq)
+        self.label_ns_ru = QtWidgets.QLabel('n<sub>s</sub> (RU): -')
+        self.v3.addWidget(self.label_ns_ru)
+        self.label_ns_eu = QtWidgets.QLabel('n<sub>q</sub> (EU): -')
+        self.v3.addWidget(self.label_ns_eu)
 
+        self.label_merd = QtWidgets.QLabel("Meridional Dimensions:")
+        self.label_merd.setFont(myFont)
+        self.v3.addWidget(self.label_merd)
 
+        self.label_D3 = QtWidgets.QLabel('D<sub>3</sub> [mm]: -')
+        self.v3.addWidget(self.label_D3)
+
+        self.label_b3 = QtWidgets.QLabel('b<sub>3</sub> [mm]: -')
+        self.v3.addWidget(self.label_b3)
+
+        self.label_D4 = QtWidgets.QLabel('D<sub>4</sub> [mm]: -')
+        self.v3.addWidget(self.label_D4)
+
+        self.label_b5 = QtWidgets.QLabel('b<sub>5</sub> [mm]: -')
+        self.v3.addWidget(self.label_b5)
+
+        self.label_D5 = QtWidgets.QLabel('D<sub>5</sub> [mm]: -')
+        self.v3.addWidget(self.label_D5)
+
+        ## Blade Dimensions:
+        self.label_blade_dim = QtWidgets.QLabel('Blade Dimensions:')
+        self.label_blade_dim.setFont(myFont)
+        self.v3.addWidget(self.label_blade_dim)
+
+        self.label_beta3 = QtWidgets.QLabel(u'\u03b2'+'<sub>3</sub> [deg]: -')
+        self.v3.addWidget(self.label_beta3)
+
+        self.label_beta4 = QtWidgets.QLabel(u'\u03b2'+'<sub>4</sub> [deg]: -')
+        self.v3.addWidget(self.label_beta4)
+
+        self.label_beta5 = QtWidgets.QLabel(u'\u03b2'+'<sub>5</sub> [deg]: -')
+        self.v3.addWidget(self.label_beta5)
+
+        self.label_beta6 = QtWidgets.QLabel(u'\u03b2'+'<sub>6</sub> [deg]: 95.0')
+        self.v3.addWidget(self.label_beta6)
+
+        self.label_Z = QtWidgets.QLabel('Z [-]: -')
+        self.v3.addWidget(self.label_Z)
+
+        self.label_e3 = QtWidgets.QLabel('e<sub>3</sub> [mm]: -')
+        self.v3.addWidget(self.label_e3)
+
+        #### Pump Performance Prediction:
+        self.label_pump_per = QtWidgets.QLabel('Pump Performance Prediction:')
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+        self.label_pump_per.setFont(myFont)
+        self.v3.addWidget(self.label_pump_per)
+
+        self.label_Himp_pred = QtWidgets.QLabel('H<sub>imp</sub> [m]: -')
+        self.v3.addWidget(self.label_Himp_pred)
+        self.label_H_pred = QtWidgets.QLabel('H [m]: -')
+        self.v3.addWidget(self.label_H_pred)
+        self.label_Pn_pred = QtWidgets.QLabel('P [W]: -')
+        self.v3.addWidget(self.label_Pn_pred)
+        self.label_Eff_pred = QtWidgets.QLabel(u'\u03b7' + ' [%]: -')
+        self.v3.addWidget(self.label_Eff_pred)
 
         self.frame.setLayout(self.general_win)
         self.setCentralWidget(self.frame)
@@ -470,14 +562,140 @@ class StatorWindow(Qt.QMainWindow):
         res = self.slider_D4D2.value() / 100.0
         self.label_D4D2_res.setText('p value: '+str(res))
 
+    def save_log1(self):
+        name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', filter='*.txt')
+        try:
+            file = open(name[0], 'w')
+            text = self.log_win.toPlainText()
+            file.write(text)
+            file.close()
+        except:
+            return 0
+
+    def clean_log1(self):
+        self.log_win.clear()
 
     def calc_st_dim(self):
+        self.clean_log1()
         self.line_Q.setText(str(self.Q))
         self.line_H.setText(str(self.H))
         self.line_n.setText(str(self.n))
         self.line_i.setText(str(self.i))
 
+        self.stator = stator.PyPumpRadialStatorVanes(float(self.H), float(self.Q) / 3600, float(self.n), float(self.i),
+                                       float(self.ro))
 
+        ns = self.stator.ns()
+        nq = self.stator.nq()
+        self.label_ns_ru.setText('n<sub>s</sub> (RU): '+str(round(ns, 2)))
+        self.label_ns_eu.setText('n<sub>q</sub> (EU): '+str(round(nq, 2)))
+
+
+        D3toD2 = self.stator.D3_D2()
+        D3 = self.stator.D3(D2=self.D2, D3toD2=D3toD2)
+        self.label_D3.setText('D<sub>3</sub> [mm]: '+str(round(D3, 2)))
+
+        b3tob2 = self.slider_b3b2.value()/100.0
+        b3 = self.stator.b3(b3tob2=b3tob2, b2=self.b2)
+        self.label_b3.setText('b<sub>3</sub> [mm]: '+str(round(b3, 2)))
+
+        priority = self.slider_D4D2.value()/ 100.0
+        D4toD2 = self.stator.D4_D2(priority=priority)
+        D4 = self.stator.D4(D4toD2=D4toD2, D2=self.D2)
+        self.label_D4.setText('D<sub>4</sub> [mm]: '+str(round(D4, 2)))
+
+
+        vol_eff = self.stator.VolumeEffEstimation()
+        c1m = self.stator.c1m(D1=self.D0, shaftD=self.d0, volumeEfficiency=vol_eff)
+        c6m = self.stator.c6m(c1m=c1m)
+        D6 = self.D0
+        b5 = self.stator.b6(c6m=c6m, D6=D6)
+        self.label_b5.setText('b<sub>5</sub> [mm]: '+str(round(b5, 2)))
+
+        D5 = D4+(b5+b3)/2.0
+        self.label_D5.setText('D<sub>5</sub> [mm]: '+str(round(D5, 2)))
+
+        ## BLADE DIMENSIONS:
+
+        c3m = self.stator.c3m(D3=D3, b3=b3)
+        u2 = self.stator.u2(D2=self.D2)
+        if self.choose_type == 'Single Stage, Single Entry':
+            Eff = self.stator.EfficiencyRadialSingleStageSingeEntry()
+            HydrEff = self.stator.HydraulicEfficiencyRadialPumpSingleStage()
+        elif self.choose_type == 'Single Stage, Double Entry':
+            Eff = self.stator.EfficiencyRadialSingleStageDoubleEntry()
+            HydrEff = self.stator.HydraulicEfficiencyRadialPumpSingleStage()
+        else:
+            Eff = self.stator.EfficiencyRadialMultistageSingleEntry()
+            HydrEff = self.stator.HydraulicEfficiencyRadialPumpMultistage()
+        c2u = self.stator.c2u(hydraulicEff=HydrEff, u2=u2)
+        c3u = self.stator.c3u(D2=self.D2, D3=D3, c2u=c2u)
+        beta3 = self.stator.alpha3(c3m=c3m, c3u=c3u, incidence=0.0)
+        self.label_beta3.setText(u'\u03b2'+'<sub>3</sub> [deg]: '+str(round(beta3, 2)))
+
+        beta4 = self.stator.alpha4(alpha3=beta3, D4toD2=D4toD2)
+        self.label_beta4.setText(u'\u03b2'+'<sub>4</sub> [deg]: '+str(round(beta4, 2)))
+
+        beta5 = self.stator.alpha5(alpha4=beta4, b3=b3, b6=b5)
+        self.label_beta5.setText(u'\u03b2'+'<sub>5</sub> [deg]: '+str(round(beta5, 2)))
+
+        if self.Z2 < 5:
+            Z3 = 7
+        elif self.Z2 == 5:
+            Z3 = 8
+        elif self.Z2 == 6:
+            Z3 = 10
+        elif self.Z2 == 7:
+            Z3 = 11
+        elif 7 < self.Z2 < 11:
+            Z3 = 11
+        elif 11 <= self.Z2 < 13:
+            Z3 = 13
+        elif self.Z2 > 13:
+            Z3 = 15
+        self.label_Z.setText('Z [-]: '+str(Z3))
+
+        e3 = 0.0125*self.D2
+        self.label_e3.setText('e<sub>3</sub> [mm]: '+str(round(e3, 2)))
+
+        self.label_Himp_pred.setText('H<sub>imp</sub> [m]: '+str(self.H_imp))
+        self.label_H_pred.setText('H [m]: '+str(self.H))
+        self.label_Pn_pred.setText('P [W]: '+str(self.P))
+        self.label_Eff_pred.setText(u'\u03b7' + ' [%]: '+str(self.Eff))
+
+        self.log_win.append('Input Pump Parameters:\n')
+        self.log_win.append(self.label_Q.text()+' '+self.line_Q.text())
+        self.log_win.append(self.label_H.text()+' '+self.line_H.text())
+        self.log_win.append(self.label_n.text()+' '+self.line_n.text())
+        self.log_win.append(self.label_i.text()+' '+self.line_i.text())
+        self.log_win.append('Type of Pump: '+self.choose_type)
+        self.log_win.append(self.label_b3b2_res.text())
+        self.log_win.append(self.label_D4D2_res.text())
+
+        self.log_win.append('\nSpecific Speeds:\n')
+        self.log_win.append(self.label_ns_ru.text())
+        self.log_win.append(self.label_ns_eu.text())
+
+        self.log_win.append('\nMeridional Dimensions:\n')
+        self.log_win.append(self.label_D3.text())
+        self.log_win.append(self.label_b3.text())
+        self.log_win.append(self.label_D4.text())
+        self.log_win.append(self.label_b5.text())
+        self.log_win.append(self.label_D5.text())
+
+        self.log_win.append('\nBlade Dimensions:\n')
+        self.log_win.append(self.label_beta3.text())
+        self.log_win.append(self.label_beta4.text())
+        self.log_win.append(self.label_beta5.text())
+        self.log_win.append(self.label_beta6.text())
+        self.log_win.append(self.label_Z.text())
+        self.log_win.append(self.label_e3.text())
+
+        self.log_win.append('\nPump Performance Prediction:\n')
+        self.log_win.append(self.label_Himp_pred.text())
+        self.log_win.append(self.label_H_pred.text())
+        self.log_win.append(self.label_Pn_pred.text())
+        self.log_win.append(self.label_Eff_pred.text())
 
 class MainWindow(Qt.QMainWindow):
     def __init__(self, parent=None):
@@ -496,7 +714,8 @@ class MainWindow(Qt.QMainWindow):
         self.tab_general.addTab(self.ImpellerWin, "Impeller Designer")
         self.tab_general.addTab(self.StatorWin, "Radial Diffuser Designer")
 
-        self.button_win = QtWidgets.QVBoxLayout()
+        self.button_win = QtWidgets.QHBoxLayout()
+        self.button_win.setAlignment(Qt.Qt.AlignRight)
         self.but_calc = QtWidgets.QPushButton('Calculate Dimensions')
         self.button_win.addWidget(self.but_calc)
 
@@ -515,13 +734,34 @@ class MainWindow(Qt.QMainWindow):
         cur_H = self.ImpellerWin.line_H.text()
         cur_n = self.ImpellerWin.line_n.text()
         cur_i = self.ImpellerWin.line_i.text()
+        cur_D2 = float(self.ImpellerWin.label_D2.text()[self.ImpellerWin.label_D2.text().find(':')+1:])
+        cur_b2 = float(self.ImpellerWin.label_b2.text()[self.ImpellerWin.label_b2.text().find(':')+1:])
+        cur_D0 = float(self.ImpellerWin.label_D0.text()[self.ImpellerWin.label_D0.text().find(':')+1:])
+        cur_d0 = float(self.ImpellerWin.label_d0.text()[self.ImpellerWin.label_d0.text().find(':')+1:])
+        cur_type = self.ImpellerWin.choose_type.currentText()
+        cur_Z2 = int(self.ImpellerWin.label_Z_res.text()[self.ImpellerWin.label_Z_res.text().find(':')+1:])
+        cur_H_imp = float(self.ImpellerWin.label_Himp_pred.text()[self.ImpellerWin.label_Himp_pred.text().find(':')+1:])
+        cur_H = float(self.ImpellerWin.label_H_pred.text()[self.ImpellerWin.label_H_pred.text().find(':')+1:])
+        cur_P = float(self.ImpellerWin.label_Pn_pred.text()[self.ImpellerWin.label_Pn_pred.text().find(':')+1:])
+        cur_Eff = float(self.ImpellerWin.label_Eff_pred.text()[self.ImpellerWin.label_Eff_pred.text().find(':')+1:])
 
         self.StatorWin.Q = cur_Q
         self.StatorWin.H = cur_H
         self.StatorWin.n = cur_n
         self.StatorWin.i = cur_i
-        self.StatorWin.calc_st_dim()
+        self.StatorWin.D2 = cur_D2
+        self.StatorWin.b2 = cur_b2
+        self.StatorWin.D0 = cur_D0
+        self.StatorWin.d0 = cur_d0
+        self.StatorWin.choose_type = cur_type
+        self.StatorWin.Z2 = cur_Z2
+        self.StatorWin.H_imp = cur_H_imp
+        self.StatorWin.H = cur_H
+        self.StatorWin.P = cur_P
+        self.StatorWin.Eff = cur_Eff
 
+
+        self.StatorWin.calc_st_dim()
 
 
 
